@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Part 2 – Data Table</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
+    body {
+      margin: 0;
+      padding: 2rem 1rem;
+      background: #f5f7fc;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .table-card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      max-width: 900px;
+      width: 100%;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      color: #1a2639;
+      font-size: 1.7rem;
+      border-left: 6px solid #2a7de1;
+      padding-left: 1rem;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    #searchInput {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #dbe1ea;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    #searchInput:focus {
+      outline: none;
+      border-color: #2a7de1;
+      box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.15);
+    }
+    .sort-btn {
+      background: #eef2fb;
+      color: #1a2639;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .sort-btn:hover {
+      background: #dce6fa;
+    }
+    .sort-btn.active {
+      background: #2a7de1;
+      color: white;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    thead {
+      background: #f0f4fc;
+    }
+    th {
+      padding: 0.9rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #1a2639;
+      border-bottom: 2px solid #dbe1ea;
+    }
+    td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid #eef1f6;
+      color: #2c3e50;
+    }
+    tbody tr:hover {
+      background: #f8fafd;
+    }
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      color: #8a97a8;
+      font-style: italic;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      color: #2a7de1;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="table-card">
+    <h2>Data Table</h2>
+
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="🔍 Search by name, city...">
+      <button class="sort-btn" id="sortNameBtn">Sort by Name</button>
+      <button class="sort-btn" id="sortAgeBtn">Sort by Age</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>City</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div id="noResults" class="no-results" style="display:none;">No matching results found.</div>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+
+  <script>
+    // 1) The data array
+    const people = [
+      { name: 'Ahmed Ali',      age: 28, city: 'Cairo' },
+      { name: 'Sara Mohamed',   age: 24, city: 'Alexandria' },
+      { name: 'Omar Hassan',    age: 32, city: 'Giza' },
+      { name: 'Mona Ibrahim',   age: 27, city: 'Cairo' },
+      { name: 'Youssef Adel',   age: 21, city: 'Mansoura' },
+      { name: 'Layla Khaled',   age: 35, city: 'Aswan' },
+      { name: 'Hana Mostafa',   age: 19, city: 'Luxor' },
+      { name: 'Khaled Samir',   age: 41, city: 'Alexandria' },
+      { name: 'Nour Ehab',      age: 30, city: 'Giza' },
+      { name: 'Tarek Fouad',    age: 22, city: 'Cairo' },
+    ];
+
+    // State
+    let currentData = [...people];
+    let sortKey = null;        // 'name' or 'age'
+    let sortDirection = 1;     // 1 = ascending, -1 = descending
+
+    const tbody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('searchInput');
+    const noResults = document.getElementById('noResults');
+    const sortNameBtn = document.getElementById('sortNameBtn');
+    const sortAgeBtn = document.getElementById('sortAgeBtn');
+
+    // 2) Render table
+    function renderTable(data) {
+      tbody.innerHTML = '';
+      if (data.length === 0) {
+        noResults.style.display = 'block';
+        return;
+      }
+      noResults.style.display = 'none';
+      data.forEach(person => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${person.name}</td>
+          <td>${person.age}</td>
+          <td>${person.city}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 3) Filter by search input
+    function applyFilterAndSort() {
+      const query = searchInput.value.trim().toLowerCase();
+
+      // Filter
+      let filtered = people.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        p.city.toLowerCase().includes(query) ||
+        String(p.age).includes(query)
+      );
+
+      // Sort
+      if (sortKey) {
+        filtered.sort((a, b) => {
+          let valA = a[sortKey];
+          let valB = b[sortKey];
+          if (typeof valA === 'string') valA = valA.toLowerCase();
+          if (typeof valB === 'string') valB = valB.toLowerCase();
+          if (valA < valB) return -1 * sortDirection;
+          if (valA > valB) return 1 * sortDirection;
+          return 0;
+        });
+      }
+
+      renderTable(filtered);
+    }
+
+    // 4) Search listener (live filtering)
+    searchInput.addEventListener('input', applyFilterAndSort);
+
+    // 5) Sort buttons
+    function updateSortButtons(activeBtn) {
+      sortNameBtn.classList.toggle('active', activeBtn === sortNameBtn);
+      sortAgeBtn.classList.toggle('active', activeBtn === sortAgeBtn);
+    }
+
+    sortNameBtn.addEventListener('click', () => {
+      if (sortKey === 'name') sortDirection *= -1;
+      else { sortKey = 'name'; sortDirection = 1; }
+      updateSortButtons(sortNameBtn);
+      applyFilterAndSort();
+    });
+
+    sortAgeBtn.addEventListener('click', () => {
+      if (sortKey === 'age') sortDirection *= -1;
+      else { sortKey = 'age'; sortDirection = 1; }
+      updateSortButtons(sortAgeBtn);
+      applyFilterAndSort();
+    });
+
+    // Initial render
+    renderTable(currentData);
+  </script>
+</body>
+</html>

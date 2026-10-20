@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Part 1 – Registration Form</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
+    body {
+      margin: 0;
+      padding: 2rem 1rem;
+      background: #f5f7fc;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .form-card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      max-width: 550px;
+      width: 100%;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      color: #1a2639;
+      font-size: 1.7rem;
+      border-left: 6px solid #2a7de1;
+      padding-left: 1rem;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+    label {
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #1e2b3a;
+      margin-bottom: 0.35rem;
+    }
+    input {
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #dbe1ea;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #2a7de1;
+      box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.15);
+    }
+    input.invalid {
+      border-color: #d03b3b;
+      background: #fff6f6;
+    }
+    .error-msg {
+      color: #d03b3b;
+      font-size: 0.8rem;
+      font-weight: 500;
+      min-height: 1.1rem;
+      padding-left: 0.25rem;
+      margin-top: 0.3rem;
+    }
+    button[type="submit"] {
+      background: #2a7de1;
+      color: white;
+      border: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    button[type="submit"]:hover {
+      background: #1e6acb;
+      box-shadow: 0 6px 16px rgba(42, 125, 225, 0.35);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      color: #2a7de1;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .back-link:hover { text-decoration: underline; }
+    #successMessage {
+      display: none;
+      background: #e6f8ee;
+      color: #1e7a4a;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-card">
+    <h2>Registration Form</h2>
+    <form id="regForm" novalidate>
+      <div class="form-field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name">
+        <div class="error-msg" id="nameError"></div>
+      </div>
+
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="example@mail.com">
+        <div class="error-msg" id="emailError"></div>
+      </div>
+
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="At least 8 characters">
+        <div class="error-msg" id="passwordError"></div>
+      </div>
+
+      <div class="form-field">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password">
+        <div class="error-msg" id="confirmPasswordError"></div>
+      </div>
+
+      <div class="form-field">
+        <label for="age">Age</label>
+        <input type="number" id="age" name="age" placeholder="18+">
+        <div class="error-msg" id="ageError"></div>
+      </div>
+
+      <button type="submit">Register</button>
+      <div id="successMessage">✅ Registration successful! (Demo only – no data was sent)</div>
+    </form>
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('regForm');
+    const fields = {
+      name: document.getElementById('name'),
+      email: document.getElementById('email'),
+      password: document.getElementById('password'),
+      confirmPassword: document.getElementById('confirmPassword'),
+      age: document.getElementById('age'),
+    };
+    const errors = {
+      name: document.getElementById('nameError'),
+      email: document.getElementById('emailError'),
+      password: document.getElementById('passwordError'),
+      confirmPassword: document.getElementById('confirmPasswordError'),
+      age: document.getElementById('ageError'),
+    };
+
+    function setError(field, message) {
+      errors[field].textContent = message;
+      fields[field].classList.toggle('invalid', !!message);
+    }
+
+    function validateName() {
+      const value = fields.name.value.trim();
+      if (!value) return setError('name', 'Name is required.');
+      if (value.length < 3) return setError('name', 'Name must be at least 3 characters.');
+      setError('name', '');
+      return true;
+    }
+
+    function validateEmail() {
+      const value = fields.email.value.trim();
+      if (!value) return setError('email', 'Email is required.');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return setError('email', 'Please enter a valid email address.');
+      setError('email', '');
+      return true;
+    }
+
+    function validatePassword() {
+      const value = fields.password.value;
+      if (!value) return setError('password', 'Password is required.');
+      if (value.length < 8) return setError('password', 'Password must be at least 8 characters.');
+      setError('password', '');
+      return true;
+    }
+
+    function validateConfirmPassword() {
+      const value = fields.confirmPassword.value;
+      if (!value) return setError('confirmPassword', 'Please confirm your password.');
+      if (value !== fields.password.value) return setError('confirmPassword', 'Passwords do not match.');
+      setError('confirmPassword', '');
+      return true;
+    }
+
+    function validateAge() {
+      const value = fields.age.value;
+      if (!value) return setError('age', 'Age is required.');
+      const num = Number(value);
+      if (!Number.isInteger(num) || num < 1) return setError('age', 'Please enter a valid age.');
+      if (num < 18) return setError('age', 'You must be at least 18 years old.');
+      if (num > 120) return setError('age', 'Please enter a realistic age.');
+      setError('age', '');
+      return true;
+    }
+
+    // Live validation while typing
+    fields.name.addEventListener('input', validateName);
+    fields.email.addEventListener('input', validateEmail);
+    fields.password.addEventListener('input', () => {
+      validatePassword();
+      if (fields.confirmPassword.value) validateConfirmPassword();
+    });
+    fields.confirmPassword.addEventListener('input', validateConfirmPassword);
+    fields.age.addEventListener('input', validateAge);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const valid =
+        validateName() &&
+        validateEmail() &&
+        validatePassword() &&
+        validateConfirmPassword() &&
+        validateAge();
+
+      if (valid) {
+        document.getElementById('successMessage').style.display = 'block';
+        form.reset();
+        Object.keys(errors).forEach(key => setError(key, ''));
+        setTimeout(() => {
+          document.getElementById('successMessage').style.display = 'none';
+        }, 4000);
+      } else {
+        document.getElementById('successMessage').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
